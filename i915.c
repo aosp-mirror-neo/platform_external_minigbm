@@ -60,8 +60,8 @@ struct i915_device {
 	struct modifier_support_t modifier;
 	int device_id;
 	bool is_xelpd;
-	/*TODO : cleanup is_mtl to avoid adding variables for every new platforms */
-	bool is_mtl;
+	/*TODO : cleanup is_mtl_or_newer to avoid adding variables for every new platforms */
+	bool is_mtl_or_newer;
 	int32_t num_fences_avail;
 	bool has_mmap_offset;
 };
@@ -121,10 +121,12 @@ static void i915_info_from_device_id(struct i915_device *i915)
 
 	const uint16_t mtl_ids[] = { 0x7D40, 0x7D60, 0x7D45, 0x7D55, 0x7DD5 };
 
+	const uint16_t arl_ids[] = { 0x7D41, 0x7D51, 0x7D67, 0x7DD1, 0xB640 };
+
 	unsigned i;
 	i915->graphics_version = 4;
 	i915->is_xelpd = false;
-	i915->is_mtl = false;
+	i915->is_mtl_or_newer = false;
 
 	for (i = 0; i < ARRAY_SIZE(gen3_ids); i++)
 		if (gen3_ids[i] == i915->device_id)
@@ -185,13 +187,19 @@ static void i915_info_from_device_id(struct i915_device *i915)
 	for (i = 0; i < ARRAY_SIZE(mtl_ids); i++)
 		if (mtl_ids[i] == i915->device_id) {
 			i915->graphics_version = 12;
-			i915->is_mtl = true;
+			i915->is_mtl_or_newer = true;
+		}
+
+	for (i = 0; i < ARRAY_SIZE(arl_ids); i++)
+		if (arl_ids[i] == i915->device_id) {
+			i915->graphics_version = 12;
+			i915->is_mtl_or_newer = true;
 		}
 }
 
 static void i915_get_modifier_order(struct i915_device *i915)
 {
-	if (i915->is_mtl) {
+	if (i915->is_mtl_or_newer) {
 		i915->modifier.order = xe_lpdp_modifier_order;
 		i915->modifier.count = ARRAY_SIZE(xe_lpdp_modifier_order);
 	} else if (i915->graphics_version == 12) {
@@ -288,7 +296,7 @@ static int i915_add_combinations(struct driver *drv)
 	const uint64_t p010_usage = BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER | hw_protected |
 				    (i915->graphics_version >= 11 ? BO_USE_SCANOUT : 0);
 
-	if (i915->is_mtl) {
+	if (i915->is_mtl_or_newer) {
 		struct format_metadata metadata_4_tiled = { .tiling = I915_TILING_4,
 							    .priority = 3,
 							    .modifier = I915_FORMAT_MOD_4_TILED };
@@ -558,8 +566,7 @@ static size_t i915_num_planes_from_modifier(struct driver *drv, uint32_t format,
 	((x) ? __builtin_choose_expr(sizeof(x) == 8, 64 - __builtin_clzll(x),                      \
 				     32 - __builtin_clz(x))                                        \
 	     : 0)
-
-#define roundup_power_of_two(x) ((x) != 0 ? 1ULL << gbm_fls((x)-1) : 0)
+#define roundup_power_of_two(x) ((x) != 0 ? 1ULL << gbm_fls((x) - 1) : 0)
 
 static int i915_bo_compute_metadata(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 				    uint64_t use_flags, const uint64_t *modifiers, uint32_t count)
@@ -879,7 +886,7 @@ static int i915_bo_create_from_metadata(struct bo *bo)
 		}
 	}
 
-	bo->meta.cached = (i915->has_llc || i915->is_mtl) && !(bo->meta.use_flags & BO_USE_SCANOUT);
+	bo->meta.cached = (i915->has_llc || i915->is_mtl_or_newer) && !(bo->meta.use_flags & BO_USE_SCANOUT);
 
 	return 0;
 }

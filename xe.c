@@ -85,6 +85,14 @@ static void xe_info_from_device_id(struct xe_device *xe)
 		}
 	}
 
+	for (i = 0; i < ARRAY_SIZE(arl_ids); i++) {
+		if (arl_ids[i] == xe->device_id) {
+			xe->graphics_version = 12;
+			xe->is_mtl_or_newer = true;
+			return;
+		}
+	}
+
 	for (i = 0; i < ARRAY_SIZE(lnl_ids); i++) {
 		if (lnl_ids[i] == xe->device_id) {
 			xe->graphics_version = 20;
@@ -229,8 +237,9 @@ static int xe_add_combinations(struct driver *drv)
 	 *   https://lore.kernel.org/all/20241028193015.3241858-9-clinton.a.taylor@intel.com
 	 */
 	if (xe->graphics_version < 30) {
-		drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
-				     &metadata_x_tiled, scanout_and_render_not_linear);
+		drv_add_combinations(drv, scanout_render_formats,
+				     ARRAY_SIZE(scanout_render_formats), &metadata_x_tiled,
+				     scanout_and_render_not_linear);
 	}
 
 	/* Rendering can be supported via VK_ANDROID_external_format_resolve */
@@ -337,7 +346,7 @@ static int xe_align_dimensions(struct bo *bo, uint32_t format, uint32_t tiling, 
 
 static void xe_query_pxp_support(struct driver *drv, struct xe_device *xe)
 {
-	struct drm_xe_query_pxp_status pxp_status = {0};
+	struct drm_xe_query_pxp_status pxp_status = { 0 };
 	struct drm_xe_device_query query = {
 		.extensions = 0,
 		.query = DRM_XE_DEVICE_QUERY_PXP_STATUS,
@@ -574,7 +583,8 @@ static int xe_bo_compute_metadata(struct bo *bo, uint32_t width, uint32_t height
 
 		uint32_t use_flags_mask = use_flags & ~BO_USE_PROTECTED;
 		if ((xe->is_mtl_or_newer) &&
-		    ((use_flags_mask == (BO_USE_SCANOUT | BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER)) ||
+		    ((use_flags_mask ==
+		      (BO_USE_SCANOUT | BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER)) ||
 		     (use_flags_mask == (BO_USE_RENDERING | BO_USE_TEXTURE | BO_USE_SCANOUT)) ||
 		     (use_flags_mask == (BO_USE_TEXTURE | BO_USE_RENDERING)))) {
 			modifier = (xe->graphics_version >= 20) ? I915_FORMAT_MOD_4_TILED_LNL_CCS
@@ -849,8 +859,7 @@ static int xe_bo_flush(struct bo *bo, struct mapping *mapping)
 static bool xe_is_protected_usage_permitted(struct driver *drv, uint64_t use_flags)
 {
 	if ((use_flags & BO_USE_PROTECTED) &&
-	    ((use_flags & BO_USE_RENDERING) ||
-	     (use_flags & BO_USE_GPU_DATA_BUFFER))) {
+	    ((use_flags & BO_USE_RENDERING) || (use_flags & BO_USE_GPU_DATA_BUFFER))) {
 		uid_t uid = AIBinder_getCallingUid();
 		return uid == AID_SYSTEM;
 	}

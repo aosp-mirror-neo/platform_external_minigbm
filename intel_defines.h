@@ -7,9 +7,9 @@
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof(*(A)))
 
 static const uint32_t scanout_render_formats[] = {
-	DRM_FORMAT_ABGR2101010, DRM_FORMAT_ABGR8888,	DRM_FORMAT_ARGB2101010,
-	DRM_FORMAT_ARGB8888,	DRM_FORMAT_RGB565,	DRM_FORMAT_XBGR2101010,
-	DRM_FORMAT_XBGR8888,	DRM_FORMAT_XRGB2101010, DRM_FORMAT_XRGB8888,
+	DRM_FORMAT_ABGR2101010,	  DRM_FORMAT_ABGR8888,	  DRM_FORMAT_ARGB2101010,
+	DRM_FORMAT_ARGB8888,	  DRM_FORMAT_RGB565,	  DRM_FORMAT_XBGR2101010,
+	DRM_FORMAT_XBGR8888,	  DRM_FORMAT_XRGB2101010, DRM_FORMAT_XRGB8888,
 	DRM_FORMAT_ABGR16161616F,
 };
 
@@ -72,6 +72,10 @@ const uint16_t mtl_ids[] = {
 	0x7D40, 0x7D60, 0x7D45, 0x7D55, 0x7DD5,
 };
 
+const uint16_t arl_ids[] = {
+	0x7D41, 0x7D51, 0x7D67, 0x7DD1, 0xB640,
+};
+
 const uint16_t lnl_ids[] = {
 	0x6420,
 	0x64A0,
@@ -82,21 +86,8 @@ const uint16_t ptl_ids[] = { 0xB080, 0xB081, 0xB082, 0xB083, 0xB08F,
 			     0xB090, 0xB0A0, 0xB0B0, 0xFD80, 0xFD81 };
 
 const uint16_t nvl_ids[] = {
-       /* NVL-S */
-       0xD740,
-       0xD741,
-       0xD742,
-       0xD743,
-       0xD744,
-       0xD745,
-       /* NVL-P */
-       0xD750,
-       0xD751,
-       0xD752,
-       0xD753,
-       0xD754,
-       0xD755,
-       0xD756,
-       0xD757,
-       0xD75F
+	/* NVL-S */
+	0xD740, 0xD741, 0xD742, 0xD743, 0xD744, 0xD745,
+	/* NVL-P */
+	0xD750, 0xD751, 0xD752, 0xD753, 0xD754, 0xD755, 0xD756, 0xD757, 0xD75F
 };
