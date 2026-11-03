@@ -119,7 +119,8 @@ static void msm_calculate_layout(struct bo *bo)
 			y_plane = ALIGN(y_plane, PLANE_SIZE_ALIGN);
 			uv_plane = ALIGN(uv_plane, PLANE_SIZE_ALIGN);
 			y_plane += get_ubwc_meta_size(width, height, 32, 8);
-			uv_plane += get_ubwc_meta_size(width >> 1, height >> 1, 16, 8);
+			uv_plane += get_ubwc_meta_size(DIV_ROUND_UP(width, 2),
+						       DIV_ROUND_UP(height, 2), 16, 8);
 			extra_padding = NV12_UBWC_PADDING(y_stride);
 		} else {
 			extra_padding = NV12_LINEAR_PADDING;
